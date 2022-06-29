@@ -21,7 +21,7 @@ create_table()
 
 def get_all_entries():
     db = sqlite3.connect('.database.db')
-    statement = 'SELECT website, password, id FROM PASSWORDS'
+    statement = 'SELECT website, password, id, email FROM PASSWORDS'
     cur = db.cursor()
     items_io = cur.execute(statement)
     item_lst = [i for i in items_io]
@@ -42,7 +42,7 @@ def register_website(website, password, email):
     statement = '''INSERT INTO PASSWORDS(WEBSITE, PASSWORD, EMAIL)
 	VALUES (?,?,?)
 	'''
-    statement2 = 'SELECT website, password, id FROM PASSWORDS WHERE website = ?'
+    statement2 = 'SELECT website, password, id, email FROM PASSWORDS WHERE website = ?'
     cur = db.cursor()
     cur.execute(statement, (website, password, email))
     datas = cur.execute(statement2, (website,))

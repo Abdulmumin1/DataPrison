@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt
 
 from manager import (get_all_entries, search_website, register_website,
                      delete_entry)
-
+from genp import generate_password
 
 colors = {
     'cover': '#101019',
@@ -47,6 +47,9 @@ class Dialog(QDialog):
         formLayout.addRow('Password:', self.password)
         formLayout.addRow('Email:', self.email)
 
+        # genarate password button
+        generate_password = self.create_button(
+            "Generate password", self.generate_password_)
         btn_layout = QHBoxLayout()
         ok = self.create_button(text='Ok', func=self.register)
         cancel = self.create_button(text='Cancel', func=self.close)
@@ -55,6 +58,7 @@ class Dialog(QDialog):
         btn_layout.addWidget(cancel)
 
         dlg_layout.addLayout(formLayout)
+        dlg_layout.addWidget(generate_password)
         dlg_layout.addLayout(btn_layout)
 
         self.setLayout(dlg_layout)
@@ -81,6 +85,10 @@ class Dialog(QDialog):
     def closeEvent(self, event):
         self.parent().dialog = False
 
+    def generate_password_(self):
+        password = generate_password()
+        self.password.setText(password)
+
 
 class CustomFrame(QFrame):
     def __init__(self, datas):
@@ -98,15 +106,18 @@ class CustomFrame(QFrame):
         self.id = datas[2]
 
         label = QLabel(
-            text=f"<h3>{website}</h3<br><cite style='color:gray'>{password}</cite>")
+            text=f"<h3>{website}</h3>")
 
         button_copy = self.create_button(
-            'copy', lambda: QApplication.clipboard().setText(password))
-        button_delete = self.create_button('del', self.delete_card)
+            '❐', lambda: QApplication.clipboard().setText(datas[1]))
+        button_email = self.create_button(
+            "✉", lambda: QApplication.clipboard().setText(datas[3]))
+        button_delete = self.create_button('✗', self.delete_card)
 
         layout.addWidget(label)
         layout.addStretch(1)
         layout.addWidget(button_copy)
+        layout.addWidget(button_email)
         layout.addWidget(button_delete)
 
         self.setLayout(layout)
