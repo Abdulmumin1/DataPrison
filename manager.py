@@ -30,7 +30,7 @@ def get_all_entries():
 
 def search_website(x):
     db = sqlite3.connect('.database.db')
-    statement = 'SELECT website, password, id FROM PASSWORDS WHERE website Like ?'
+    statement = 'SELECT website, password, id, email FROM PASSWORDS WHERE website Like ?'
     cur = db.cursor()
     items_io = cur.execute(statement, (x+'%',))
     item_lst = [i for i in items_io]
@@ -64,5 +64,5 @@ def delete_entry(id):
 
 
 if __name__ == '__main__':
-
-    pass
+    for i in range(0, 10):
+        register_website(f"dummy{i}", f"password{i}", "email@fake.com")

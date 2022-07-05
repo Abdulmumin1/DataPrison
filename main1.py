@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QScrollArea,
                              QLineEdit, QFormLayout, QHBoxLayout, QFrame,
                              QPushButton, QLabel, QListWidget, QDialog, QAction, QToolBar)
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 
 
 from manager import (get_all_entries, search_website, register_website,
                      delete_entry)
 from genp import generate_password
-
+from utils import handle
 colors = {
     'cover': '#101019',
     'primary': "#181825",
@@ -79,7 +79,6 @@ class Dialog(QDialog):
         self.close()
         datas = register_website(website_text, password_text, email_text)
         card = CustomFrame(datas)
-
         self.parent().scroll_frame_layout.insertWidget(0, card)
 
     def closeEvent(self, event):
@@ -97,6 +96,8 @@ class CustomFrame(QFrame):
             "QFrame{"+f"background:{colors['primary']}; padding:6px; border-radius:5px;"+"}")
 
         layout = QHBoxLayout()
+        self.entries = datas
+        self.show_notification = handle.get_function('notification')
 
         website = datas[0].capitalize()
         password = datas[1]
@@ -109,9 +110,9 @@ class CustomFrame(QFrame):
             text=f"<h3>{website}</h3>")
 
         button_copy = self.create_button(
-            '❐', lambda: QApplication.clipboard().setText(datas[1]))
+            '❐', lambda: self.copy_notification('psd'))
         button_email = self.create_button(
-            "✉", lambda: QApplication.clipboard().setText(datas[3]))
+            "✉", lambda: self.copy_notification('email'))
         button_delete = self.create_button('✗', self.delete_card)
 
         layout.addWidget(label)
@@ -122,6 +123,18 @@ class CustomFrame(QFrame):
 
         self.setLayout(layout)
 
+    def copy_notification(self, _type):
+        func = {'psd': lambda: QApplication.clipboard().setText(self.entries[1]),
+                'email': lambda: QApplication.clipboard().setText(self.entries[3])}
+        execute = func.get(_type)
+        execute()
+        show_notif = self.show_notification('msg')
+
+        show_notif("copied!")
+        remove_notif = self.show_notification('rmnotif')
+
+        QTimer.singleShot(700, remove_notif)
+
     def create_button(self, text, func):
         button = QPushButton(text=text, clicked=func)
         button.setStyleSheet('*{' + f'max-height:30px;background:{colors["secondary"]};' +
@@ -130,9 +143,49 @@ class CustomFrame(QFrame):
         return button
 
     def delete_card(self):
+        show_undo_notif = self.show_notification('undo')
+        remove_notif = self.show_notification('rmnotif')
+        self.not_undo = True
+        self.hide()
 
-        delete_entry(self.id)
-        self.close()
+        def undo():
+            self.show()
+            self.not_undo = False
+            remove_notif()
+
+        def full_delete():
+            if self.not_undo:
+                delete_entry(self.id)
+                self.close()
+                remove_notif()
+
+        show_undo_notif(self.entries[0].capitalize(), undo, full_delete)
+        QTimer.singleShot(3000, full_delete)
+
+
+class NotificationCard(QFrame):
+    def __init__(self, message, btext=None, func=None):
+        super().__init__()
+        self.setStyleSheet(
+            "QFrame{"+f"background:{colors['primary']}; padding:5px; border-radius:5px;"+"}")
+
+        layout = QHBoxLayout()
+
+        text = QLabel(text=message)
+        layout.addWidget(text)
+        if btext:
+            button = self.create_button(btext, func)
+
+            layout.addStretch(1)
+            layout.addWidget(button)
+        self.setLayout(layout)
+
+    def create_button(self, text, func):
+        button = QPushButton(text=text, clicked=func)
+        button.setStyleSheet('*{' + f'max-height:30px;background:{colors["secondary"]};' +
+                             f' border-radius:5px; padding:10px; color:{colors["primary"]};'+'}' +
+                             '*:hover{background:#E6AF32}')
+        return button
 
 
 class Main(QMainWindow):
@@ -141,10 +194,12 @@ class Main(QMainWindow):
         self.setStyleSheet(
             f'background:{colors["cover"]}; color:{colors["secondary"]}')
         self.initUI()
-        self.get_items()
+        self.register_all_global_functions()
+        QTimer.singleShot(1000, self.get_items)
 
     def initUI(self):
         self.dialog = False
+        self.notif = False
         self.main_frame = QFrame()
         self.main_layout = QVBoxLayout(self.main_frame)
 
@@ -169,6 +224,7 @@ class Main(QMainWindow):
         scroll_frame = QFrame()
         self.scroll_frame_layout = QVBoxLayout(scroll_frame)
         self.scroll_frame_layout.addStretch(1)
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(scroll_frame)
@@ -203,12 +259,41 @@ class Main(QMainWindow):
         dialog.show()
         self.dialog = True
 
+    def register_all_global_functions(self):
+        handle.register_function('notification', self.show_notification)
+
+    def show_notification(self, _type):
+        types = {'undo': self.show_undo_notif, 'rmnotif': self.remove_notif,
+                 'msg': self.show_message_notification}
+        return types.get(_type)
+
+    def show_undo_notif(self, text, undo_func, delete_func):
+        if self.notif:
+            # delete_func()
+            self.remove_notif()
+
+        self.notif = NotificationCard(
+            "Entry for %s is deleted!" % text, 'Undo', undo_func)
+        self.main_layout.insertWidget(1, self.notif)
+        # QTimer.singleShot(1000, )
+
+    def remove_notif(self):
+        self.notif.close()
+        self.scroll_frame_layout.removeWidget(self.notif)
+
+    def show_message_notification(self, text):
+        if self.notif:
+            self.remove_notif()
+
+        self.notif = NotificationCard(text)
+        self.main_layout.insertWidget(1, self.notif)
+
 
 def main():
     app = QApplication([])
     win = Main()
     win.show()
-    win.resize(460, 680)
+    win.resize(800, 750)
     app.exec_()
 
 
