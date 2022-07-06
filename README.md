@@ -2,7 +2,7 @@
 
 DataPrison is a desktop of for storing keys and passwords!
 
-<img src="/images/DataPrison.png" alt="App Image" width="50%" height="50%"/>
+<img src="/images/DataPrison.png" alt="App Image" width="60%" height="60%"/>
 
 ## Installation
 
