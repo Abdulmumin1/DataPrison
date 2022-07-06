@@ -2,17 +2,17 @@
 
 DataPrison is a desktop of for storing keys and passwords!
 
-![image](/images/DataPrison.png) ![image](/images/Undo.png)
+<img src="/images/DataPrison.png" alt="App Image" width="50%" height="50%"/>
 
 ## Installation
 
 ### For windows
 
-download [here] (https://github.com/Abdulmumin1/DataPrison).
+download [here].
 
 ### For Linux
 
-download [here] (https://github.com/Abdulmumin1/DataPrison).
+download [here].
 
 ### Compile for your native platform
 
