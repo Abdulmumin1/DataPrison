@@ -12,7 +12,7 @@ download [here].
 
 ### For Linux
 
-download [here](https://github.com/Abdulmumin1/SQLitePasswordManager/raw/modified/linux/dataprison_2.0-1_amd64.deb).
+download .deb [here](https://github.com/Abdulmumin1/SQLitePasswordManager/raw/modified/linux/dataprison_2.0-1_amd64.deb).
 
 ### Compile for your native platform
 
