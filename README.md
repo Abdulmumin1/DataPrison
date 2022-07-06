@@ -12,7 +12,7 @@ download [here].
 
 ### For Linux
 
-download [here].
+download [here](https://github.com/Abdulmumin1/SQLitePasswordManager/raw/modified/linux/dataprison_2.0-1_amd64.deb).
 
 ### Compile for your native platform
 
@@ -26,7 +26,7 @@ pyinstaller --onefile main.py
 
 ## Contributing
 
-Help compile the app for more platforms
+compile app for more platforms
 
 ## Authors
 
