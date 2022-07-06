@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QScrollArea
                              QLineEdit, QFormLayout, QHBoxLayout, QFrame,
                              QPushButton, QLabel, QListWidget, QDialog, QAction, QToolBar)
 from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QSize
+from PyQt5.QtGui import QIcon
 
 
 from manager import (get_all_entries, search_website, register_website,
@@ -194,9 +195,11 @@ class Main(QMainWindow):
         super().__init__()
         self.setStyleSheet(
             f'background:{colors["cover"]}; color:{colors["secondary"]}')
+        self.setWindowTitle('Data Prison')
+        self.setWindowIcon(QIcon('/usr/share/pixmaps/dataprison.xpm'))
         self.initUI()
         self.register_all_global_functions()
-        QTimer.singleShot(1000, self.get_items)
+        QTimer.singleShot(300, self.get_items)
 
     def initUI(self):
         self.dialog = False
@@ -294,7 +297,7 @@ class Main(QMainWindow):
 
 
 def main():
-    app = QApplication([])
+    app = QApplication(["Data Prison"])
     win = Main()
     win.show()
     win.resize(800, 600)

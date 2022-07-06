@@ -1,9 +1,17 @@
 import sys
 import sqlite3
+import os
+from pathlib import Path
 
-
+home = Path.home()
+full_path = os.path.join(home,'.Dataprison')
+try:
+    os.mkdir(full_path)
+except:
+    pass
+database_path = os.path.join(full_path, '.database.db')
 def create_table():
-    db = sqlite3.connect('.database.db')
+    db = sqlite3.connect(database_path)
     statement = '''CREATE TABLE if not exists PASSWORDS
 	(ID INTEGER PRIMARY KEY AUTOINCREMENT,
 	WEBSITE TEXT NOT NULL,
@@ -20,7 +28,7 @@ create_table()
 
 
 def get_all_entries():
-    db = sqlite3.connect('.database.db')
+    db = sqlite3.connect(database_path)
     statement = 'SELECT website, password, id, email FROM PASSWORDS'
     cur = db.cursor()
     items_io = cur.execute(statement)
@@ -29,7 +37,7 @@ def get_all_entries():
 
 
 def search_website(x):
-    db = sqlite3.connect('.database.db')
+    db = sqlite3.connect(database_path)
     statement = 'SELECT website, password, id, email FROM PASSWORDS WHERE website Like ?'
     cur = db.cursor()
     items_io = cur.execute(statement, (x+'%',))
@@ -38,7 +46,7 @@ def search_website(x):
 
 
 def register_website(website, password, email):
-    db = sqlite3.connect('.database.db')
+    db = sqlite3.connect(database_path)
     statement = '''INSERT INTO PASSWORDS(WEBSITE, PASSWORD, EMAIL)
 	VALUES (?,?,?)
 	'''
@@ -53,7 +61,7 @@ def register_website(website, password, email):
 
 
 def delete_entry(id):
-    db = sqlite3.connect('.database.db')
+    db = sqlite3.connect(database_path)
     statement = 'DELETE FROM PASSWORDS where id = ?'
 
     cur = db.cursor()
