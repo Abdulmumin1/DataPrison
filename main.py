@@ -1,33 +1,14 @@
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QScrollArea,
-                             QLineEdit, QFormLayout, QHBoxLayout, QFrame,
+                             QLineEdit, QFormLayout, QHBoxLayout, QFrame,QGraphicsOpacityEffect,
                              QPushButton, QLabel, QListWidget, QDialog, QAction, QToolBar)
-from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QSize
+from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation,QPropertyAnimation
 from PyQt5.QtGui import QIcon
-
+import sys
 
 from manager import (get_all_entries, search_website, register_website,
-                     delete_entry)
+                     delete_entry, commandline_search)
 from genp import generate_password
-from utils import handle
-colors = {
-    'cover': '#101019',
-    'primary': "#181825",
-    'secondary': "#e8a202",
-    "white": "#fff"
-}
-
-scroll_var = """QScrollBar::vertical{width:6px;}
-        QScrollBar::handle:vertical{background:#181825; opacity:.3; min-height:0px;}
-        QScrollBar::handle:vertical:active{background:#e8a202; border-radius:5px;}
-        QScrollBar::add-line:vertical{height:0px; subcontrol-position:bottom;}
-        QScrollBar::sub-line:vertical{height:0px; subcontrol-position:top;}
-        """
-scroll_hor = """QScrollBar::horizontal{height:6px;}
-        QScrollBar::handle:horizontal{background:#181825; min-height:0px;}
-        QScrollBar::handle:horizontal:active{background:#e8a202; border-radius:5px;}
-        QScrollBar::add-line:horizontal{height:0px; subcontrol-position:bottom;}
-        QScrollBar::sub-line:horizontal{height:0px; subcontrol-position:top;}
-        """
+from utils import handle, colors,scroll_var
 
 
 class Dialog(QDialog):
@@ -35,18 +16,16 @@ class Dialog(QDialog):
         super().__init__(parent=parent)
 
         self.setWindowTitle('Create new')
-
+        self.setMinimumWidth(400)
         dlg_layout = QVBoxLayout()
 
-        formLayout = QFormLayout()
+        self.website = self.create_line_edit("Name")
+        self.password = self.create_line_edit("Key")
+        self.email = self.create_line_edit("Email(optional)")
 
-        self.website = QLineEdit()
-        self.password = QLineEdit()
-        self.email = QLineEdit()
-
-        formLayout.addRow('Name:', self.website)
-        formLayout.addRow('Key:', self.password)
-        formLayout.addRow('Email(optional):', self.email)
+        # formLayout.addRow('Name:', self.website)
+        # formLayout.addRow('Key:', self.password)
+        # formLayout.addRow('Email(optional):', self.email)
 
         # genarate password button
         generate_password = self.create_button(
@@ -58,16 +37,25 @@ class Dialog(QDialog):
         btn_layout.addWidget(ok)
         btn_layout.addWidget(cancel)
 
-        dlg_layout.addLayout(formLayout)
+        dlg_layout.addStretch()
+        dlg_layout.addWidget(self.website)
+        dlg_layout.addWidget(self.password)
+        dlg_layout.addWidget(self.email)
         dlg_layout.addWidget(generate_password)
         dlg_layout.addLayout(btn_layout)
+        dlg_layout.addStretch()
 
         self.setLayout(dlg_layout)
 
+    def create_line_edit(self, placeholder=None):
+        inp = QLineEdit()
+        inp.setPlaceholderText(placeholder)
+        inp.setStyleSheet('background:%s; border:1px solid %s; padding:5px; border-radius:5px;'%(colors["primary"],colors["primary"]))
+        return inp
     def create_button(self, text, func):
         button = QPushButton(text=text, clicked=func)
         button.setStyleSheet('*{' + f'background:{colors["secondary"]};' +
-                             f'border-radius:5px; padding:10px; color:{colors["primary"]};'+'}'
+                             f'border-radius:5px; padding:6px; color:{colors["primary"]};'+'}'
                              )
         return button
 
@@ -95,7 +83,6 @@ class CustomFrame(QFrame):
         super().__init__()
         self.setStyleSheet(
             "QFrame{"+f"background:{colors['primary']}; padding:6px; border-radius:5px;"+"}")
-
         layout = QHBoxLayout()
         self.entries = datas
         self.show_notification = handle.get_function('notification')
@@ -114,7 +101,7 @@ class CustomFrame(QFrame):
             '❐', lambda: self.copy_notification('psd'))
         button_email = self.create_button(
             "✉", lambda: self.copy_notification('email'))
-        button_delete = self.create_button('✗', self.delete_card)
+        button_delete = self.create_button('✕', self.delete_card)
 
         layout.addWidget(label)
         layout.addStretch(1)
@@ -127,21 +114,20 @@ class CustomFrame(QFrame):
     def copy_notification(self, _type):
         func = {'psd': lambda: QApplication.clipboard().setText(self.entries[1]),
                 'email': lambda: QApplication.clipboard().setText(self.entries[3])}
+        text = {'psd':"Key","email":"Email"}
         execute = func.get(_type)
         execute()
         show_notif = self.show_notification('msg')
+        
+        show_notif(f"{text.get(_type)} copied!")
 
-        show_notif("copied!")
-        remove_notif = self.show_notification('rmnotif')
-
-        QTimer.singleShot(700, remove_notif)
 
     def create_button(self, text, func):
         button = QPushButton(text=text, clicked=func)
         button.setCursor(Qt.PointingHandCursor)
         button.setStyleSheet('*{' + f'max-height:30px;background:{colors["secondary"]};' +
                              f' border-radius:5px; padding:10px; color:{colors["primary"]};'+'}' +
-                             '*:hover{background:#E6AF32}')
+                             '*:hover{background:#E6AF32;}')
         return button
 
     def delete_card(self):
@@ -149,28 +135,54 @@ class CustomFrame(QFrame):
         remove_notif = self.show_notification('rmnotif')
         self.not_undo = True
         self.hide()
+        handle.delete_queue = self.id
 
         def undo():
             self.show()
-            self.not_undo = False
+            handle.full_delete = False
             remove_notif()
+            handle.delete_queue = None
 
         def full_delete():
-            if self.not_undo:
+            remove_notif()
+            handle.delete_queue = None
+            if handle.full_delete:
                 delete_entry(self.id)
-                self.close()
-                remove_notif()
+                # self.fadeOut()
 
         show_undo_notif(self.entries[0].capitalize(), undo, full_delete)
-        QTimer.singleShot(3000, full_delete)
+        # QTimer.singleShot(3000, full_delete)
+    def fadeIn(self):
+        self.effect = QGraphicsOpacityEffect()
+        self.setGraphicsEffect(self.effect)
+        self.anime = QPropertyAnimation(self.effect, b"opacity")
+        self.anime.setDuration(80)
+        self.anime.setStartValue(0)
+        self.anime.setEndValue(1)
+        self.anime.start()
 
+    def fadeOut(self):
+        self.effect = QGraphicsOpacityEffect()
+        self.setGraphicsEffect(self.effect)
+        self.anime = QPropertyAnimation(self.effect, b"opacity")
+        self.anime.setDuration(100)
+        self.anime.setStartValue(1)
+        self.anime.setEndValue(0)
+        self.anime.start()
+        self.anime.finished.connect(self.hide)
+        
 
 class NotificationCard(QFrame):
-    def __init__(self, message, btext=None, func=None):
+    def __init__(self, message, btext=None, func=None, after=None):
         super().__init__()
         self.setStyleSheet(
             "QFrame{"+f"background:{colors['primary']}; padding:5px; border-radius:5px;"+"}")
-
+        self.after = after
+        self.fadeIn()
+        duration = 700
+        if btext:
+            duration = 2500
+        QTimer.singleShot(duration, self.fadeOut)
         layout = QHBoxLayout()
 
         text = QLabel(text=message)
@@ -186,9 +198,28 @@ class NotificationCard(QFrame):
         button = QPushButton(text=text, clicked=func)
         button.setStyleSheet('*{' + f'max-height:30px;background:{colors["secondary"]};' +
                              f' border-radius:5px; padding:10px; color:{colors["primary"]};'+'}' +
-                             '*:hover{background:#E6AF32}')
+                             '*:hover{background:#E6AF32;}')
         return button
 
+    def fadeIn(self):
+        self.effect = QGraphicsOpacityEffect()
+        self.setGraphicsEffect(self.effect)
+        self.anime = QPropertyAnimation(self.effect, b"opacity")
+        self.anime.setDuration(100)
+        self.anime.setStartValue(0)
+        self.anime.setEndValue(1)
+        self.anime.start()
+
+    def fadeOut(self):
+        self.effect = QGraphicsOpacityEffect()
+        self.setGraphicsEffect(self.effect)
+        self.anime = QPropertyAnimation(self.effect, b"opacity")
+        self.anime.setDuration(100)
+        self.anime.setStartValue(1)
+        self.anime.setEndValue(0)
+        self.anime.start()
+        if self.after:
+            self.anime.finished.connect(self.after)
 
 class Main(QMainWindow):
     def __init__(self):
@@ -235,7 +266,7 @@ class Main(QMainWindow):
         scroll.setWidget(scroll_frame)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll.setStyleSheet(
-            'QScrollArea{border:0;min-width:300px;}'+scroll_var+scroll_hor)
+            'QScrollArea{border:0;min-width:300px;}'+scroll_var)
 
         self.main_layout.addWidget(scroll)
 
@@ -280,7 +311,7 @@ class Main(QMainWindow):
             self.remove_notif()
 
         self.notif = NotificationCard(
-            "Entry for %s is deleted!" % text, 'Undo', undo_func)
+            "Entry for %s is deleted!" % text, 'Undo', undo_func, delete_func)
         self.main_layout.insertWidget(1, self.notif)
         # QTimer.singleShot(1000, )
 
@@ -291,18 +322,25 @@ class Main(QMainWindow):
     def show_message_notification(self, text):
         if self.notif:
             self.remove_notif()
+        if handle.delete_queue:
+            delete_entry(handle.delete_queue)
 
-        self.notif = NotificationCard(text)
+        self.notif = NotificationCard(text,after=self.remove_notif)
         self.main_layout.insertWidget(1, self.notif)
 
-
+    def closeEvent(self, a0):
+        handle.update_entry("size", [self.size().width(), self.size().height()])
+        
 def main():
     app = QApplication(["Data Prison"])
     win = Main()
     win.show()
-    win.resize(800, 600)
+    win.resize(*handle.get_config_entry("size"))
     app.exec_()
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        commandline_search(x=sys.argv[1])
+    else:
+        main()

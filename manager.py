@@ -70,7 +70,39 @@ def delete_entry(id):
     db.close()
     return True
 
+def commandline_search(x):
+    entries = search_website(x)
+    index = 1
+    which = None
+    if not entries:
+        print('Not found!')
+        return
+    if len(entries) < 2:
+        which = 0
+    else:
+        for entry in entries:
+            print(f"{index}. {entry[0]}")
+            index += 1
+        try:    
+            inp = int(input('Enter number: '))
+            which = inp
+        except:
+            print('Enter index.')
+    num = entries[which-1]
+    key = num[1]
+    print(f"key for {num[0]} copied.")
+
+# def run():
+#     if len(sys.argv) > 1:
+#         if sys.argv[1] == 'new':
+#             create_new_password()
+#         else:
+#             print(search_website(sys.argv[1]))
+#     # else:
+#     #     print('Usage: \n\tmanager.py new - create a new password \n\tmanager.py <website> recover password for that website')
+
 
 if __name__ == '__main__':
-    for i in range(0, 10):
-        register_website(f"dummy{i}", f"password{i}", "email@fake.com")
+    # for i in range(0, 10):
+    #     register_website(f"dummy{i}", f"password{i}", "email@fake.com")
+    commandline_search()
