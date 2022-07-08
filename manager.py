@@ -1,6 +1,6 @@
 import sys
 import sqlite3
-import os
+import os,pyperclip
 from pathlib import Path
 
 home = Path.home()
@@ -90,6 +90,7 @@ def commandline_search(x):
             print('Enter index.')
     num = entries[which-1]
     key = num[1]
+    pyperclip.copy(key)
     print(f"key for {num[0]} copied.")
 
 # def run():
