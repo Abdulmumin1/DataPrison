@@ -10,7 +10,7 @@ colors = {
 
 scroll_var = """QScrollBar::vertical{width:6px;}
         QScrollBar::handle:vertical{background:#181825; opacity:.3; min-height:0px;}
-        QScrollBar::handle:vertical:active{background:#e8a202; border-radius:5px;}
+        QScrollBar::handle:vertical:active{background:#e8a202;}
         QScrollBar::add-line:vertical{height:0px; subcontrol-position:bottom;}
         QScrollBar::sub-line:vertical{height:0px; subcontrol-position:top;}
         """

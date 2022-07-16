@@ -16,7 +16,7 @@ class Dialog(QDialog):
         super().__init__(parent=parent)
 
         self.setWindowTitle('Create new')
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(300)
         dlg_layout = QVBoxLayout()
 
         self.website = self.create_line_edit("Name")
@@ -60,12 +60,11 @@ class Dialog(QDialog):
         return button
 
     def register(self):
+        self.close()
         website_text = self.website.text()
         password_text = self.password.text()
+        email_text = self.email.text()      
 
-        email_text = self.email.text()
-
-        self.close()
         datas = register_website(website_text, password_text, email_text)
         card = CustomFrame(datas)
         self.parent().scroll_frame_layout.insertWidget(0, card)
@@ -84,6 +83,7 @@ class CustomFrame(QFrame):
         self.setStyleSheet(
             "QFrame{"+f"background:{colors['primary']}; padding:6px; border-radius:5px;"+"}")
         layout = QHBoxLayout()
+        #self.fadeIn()
         self.entries = datas
         self.show_notification = handle.get_function('notification')
 
@@ -145,9 +145,8 @@ class CustomFrame(QFrame):
 
         def full_delete():
             remove_notif()
-            handle.delete_queue = None
             if handle.full_delete:
-                delete_entry(self.id)
+                delete_entry(handle.delete_queue)
                 # self.fadeOut()
 
         show_undo_notif(self.entries[0].capitalize(), undo, full_delete)
@@ -156,7 +155,7 @@ class CustomFrame(QFrame):
         self.effect = QGraphicsOpacityEffect()
         self.setGraphicsEffect(self.effect)
         self.anime = QPropertyAnimation(self.effect, b"opacity")
-        self.anime.setDuration(80)
+        self.anime.setDuration(120)
         self.anime.setStartValue(0)
         self.anime.setEndValue(1)
         self.anime.start()
@@ -178,7 +177,6 @@ class NotificationCard(QFrame):
         self.setStyleSheet(
             "QFrame{"+f"background:{colors['primary']}; padding:5px; border-radius:5px;"+"}")
         self.after = after
-        self.fadeIn()
         duration = 700
         if btext:
             duration = 2500
@@ -308,6 +306,7 @@ class Main(QMainWindow):
     def show_undo_notif(self, text, undo_func, delete_func):
         if self.notif:
             # delete_func()
+            delete_entry(handle.delete_queue)
             self.remove_notif()
 
         self.notif = NotificationCard(
@@ -322,8 +321,6 @@ class Main(QMainWindow):
     def show_message_notification(self, text):
         if self.notif:
             self.remove_notif()
-        if handle.delete_queue:
-            delete_entry(handle.delete_queue)
 
         self.notif = NotificationCard(text,after=self.remove_notif)
         self.main_layout.insertWidget(1, self.notif)

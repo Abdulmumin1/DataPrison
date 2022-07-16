@@ -106,4 +106,5 @@ def commandline_search(x):
 if __name__ == '__main__':
     # for i in range(0, 10):
     #     register_website(f"dummy{i}", f"password{i}", "email@fake.com")
-    commandline_search()
+    # commandline_search(x='a')
+    pass
