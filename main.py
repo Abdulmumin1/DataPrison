@@ -97,19 +97,32 @@ class CustomFrame(QFrame):
         label = QLabel(
             text=f"<h3>{website}</h3>")
 
-        button_copy = self.create_button(
+        self.button_copy = self.create_button(
             '❐', lambda: self.copy_notification('psd'))
-        button_email = self.create_button(
+        self.button_email = self.create_button(
             "✉", lambda: self.copy_notification('email'))
-        button_delete = self.create_button('✕', self.delete_card)
-
+        self.button_delete = self.create_button('✕', self.delete_card)
+        self.hide_buttons()
         layout.addWidget(label)
         layout.addStretch(1)
-        layout.addWidget(button_copy)
-        layout.addWidget(button_email)
-        layout.addWidget(button_delete)
+        layout.addWidget(self.button_copy)
+        layout.addWidget(self.button_email)
+        layout.addWidget(self.button_delete)
 
         self.setLayout(layout)
+    def enterEvent(self, a0):
+        self.button_copy.show()
+        self.button_delete.show()
+        self.button_email.show()
+    
+    def leaveEvent(self, a0):
+        self.hide_buttons()
+
+    def hide_buttons(self):
+        self.button_copy.hide()
+        self.button_delete.hide()
+        self.button_email.hide()
+
 
     def copy_notification(self, _type):
         func = {'psd': lambda: QApplication.clipboard().setText(self.entries[1]),
