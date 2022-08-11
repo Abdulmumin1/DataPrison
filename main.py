@@ -16,7 +16,7 @@ class Dialog(QDialog):
         super().__init__(parent=parent)
 
         self.setWindowTitle('Create new')
-        self.setMinimumWidth(300)
+        self.setMinimumWidth(240)
         dlg_layout = QVBoxLayout()
 
         self.website = self.create_line_edit("Name")
