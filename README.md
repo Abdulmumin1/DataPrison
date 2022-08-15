@@ -8,11 +8,11 @@ DataPrison is a desktop of for storing keys and passwords!
 
 ### For windows
 
-download [here].
+download [here](https://github.com/Abdulmumin1/SQLitePasswordManager/raw/modified/executables/windows/main.exe).
 
 ### For Linux
 
-download .deb [here](https://github.com/Abdulmumin1/SQLitePasswordManager/raw/modified/linux/dataprison_2.0-1_amd64.deb).
+download .deb [here](https://github.com/Abdulmumin1/SQLitePasswordManager/raw/modified/executables/linux/dataprison_2.0-1_amd64.deb).
 
 ### Compile for your native platform
 
